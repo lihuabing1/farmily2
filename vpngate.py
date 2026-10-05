@@ -293,16 +293,88 @@ def build_outputs(results, raw_count, sstp_count, source):
     return data
 
 # edgetunnel 入口地址池
-EDGE_HOSTS = [
-    h.strip()
-    for h in os.environ.get(
-        "EDGE_HOSTS",
-        "cf.xreak.top:443,img.856518.xyz:443,224322.xyz:443,p.etime.vip:443,cloudflare.idc.rocks:443,cf.1o.ee:443,www.mfyx.cn:443,vps.cheng2001.top:443,www.wuduanyun.com:443,cf.92555.xyz:443,api.gzcrtw.com:443,cdn.555586.xyz:443,www.dentoncounty.gov:443,www.broadcom.com:443,tt.78607323.xyz:443,cdns.doon.eu.org:443,prizepicks.com:443,cdn.cnno.de:443,c-power.com.cn:443,www.mc.js.cool:443,www.dbs.com.sg:443,cnllm.com:443,funko.com:443,www.xiaoshuofen.com:443,www.carousell.sg:443,www.gov.il:443,cf2.996616.xyz:443,stores.staples.com:443,www.akasantech.com:443,img.css.sd:443,www.shopify.com:443,www.leics.police.uk:443,staticdelivery.nexusmods.com:443,neko.cloudflaree.eu.org:443,
-markmonitor.com:443,openai.com:443,kickstarter.com:443,lt.1930812.xyz:443,www.blibli.com:443,linear.app:443,www.dg22.top:443,uspto.gov:443,jellyfin.roddy.eu.cc:443,cdn.204910.best:443,www.5h.com:443,"
-        "so.360832.xyz:443,login.rockwellautomation.com:443,www.sofi.com:443,serviceshub.samsclub.com:443,www.bis.gov:443,securecircle.com:443,www.zendesk.com:443,dongbanghong.com:443,www.jp.pima.gov:443,www.giannidelprete.it:443,www.xflash.vip:443,dnew.cc:443,store.ubi.com:443,hzytjy.cn:443,cdn.ddeed.de:443,ahrefs.com:443,www.mastervolt.com:443,www.crazygames.fr:443,cf-cname.xingpingcn.top:443,saas.sin.fan:443,mfa.gov.ua:443,www.sloomb.com:443,cf.777791.xyz:443,egov.uscis.gov:443,www.galgamex.net:443",
-    ).split(",")
-    if h.strip()
+import os
+
+DEFAULT_EDGE_HOSTS = [
+    "cf.xreak.top:443",
+    "img.856518.xyz:443",
+    "224322.xyz:443",
+    "p.etime.vip:443",
+    "cloudflare.idc.rocks:443",
+    "cf.1o.ee:443",
+    "www.mfyx.cn:443",
+    "vps.cheng2001.top:443",
+    "www.wuduanyun.com:443",
+    "cf.92555.xyz:443",
+    "api.gzcrtw.com:443",
+    "cdn.555586.xyz:443",
+    "www.dentoncounty.gov:443",
+    "www.broadcom.com:443",
+    "tt.78607323.xyz:443",
+    "cdns.doon.eu.org:443",
+    "prizepicks.com:443",
+    "cdn.cnno.de:443",
+    "c-power.com.cn:443",
+    "www.mc.js.cool:443",
+    "www.dbs.com.sg:443",
+    "cnllm.com:443",
+    "funko.com:443",
+    "www.xiaoshuofen.com:443",
+    "www.carousell.sg:443",
+    "www.gov.il:443",
+    "cf2.996616.xyz:443",
+    "stores.staples.com:443",
+    "www.akasantech.com:443",
+    "img.css.sd:443",
+    "www.shopify.com:443",
+    "www.leics.police.uk:443",
+    "staticdelivery.nexusmods.com:443",
+    "neko.cloudflaree.eu.org:443",
+    "markmonitor.com:443",
+    "openai.com:443",
+    "kickstarter.com:443",
+    "lt.1930812.xyz:443",
+    "www.blibli.com:443",
+    "linear.app:443",
+    "www.dg22.top:443",
+    "uspto.gov:443",
+    "jellyfin.roddy.eu.cc:443",
+    "cdn.204910.best:443",
+    "www.5h.com:443",
+    "so.360832.xyz:443",
+    "login.rockwellautomation.com:443",
+    "www.sofi.com:443",
+    "serviceshub.samsclub.com:443",
+    "www.bis.gov:443",
+    "securecircle.com:443",
+    "www.zendesk.com:443",
+    "dongbanghong.com:443",
+    "www.jp.pima.gov:443",
+    "www.giannidelprete.it:443",
+    "www.xflash.vip:443",
+    "dnew.cc:443",
+    "store.ubi.com:443",
+    "hzytjy.cn:443",
+    "cdn.ddeed.de:443",
+    "ahrefs.com:443",
+    "www.mastervolt.com:443",
+    "www.crazygames.fr:443",
+    "cf-cname.xingpingcn.top:443",
+    "saas.sin.fan:443",
+    "mfa.gov.ua:443",
+    "www.sloomb.com:443",
+    "cf.777791.xyz:443",
+    "egov.uscis.gov:443",
+    "www.galgamex.net:443",
+    "www.deepl.com:443",
 ]
+
+# 如果需要允许通过环境变量覆盖，保留原来的 env 覆盖逻辑：
+env_val = os.environ.get("EDGE_HOSTS")
+if env_val:
+    EDGE_HOSTS = [h.strip() for h in env_val.split(",") if h.strip()]
+else:
+    EDGE_HOSTS = DEFAULT_EDGE_HOSTS
 
 NODES_URL = os.environ.get("NODES_URL", "https://lihuabing1.github.io/farmily2/nodes.txt")
 
