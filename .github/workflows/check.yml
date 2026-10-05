@@ -2,6 +2,15 @@ name: VPN Gate Node Check
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - '.github/workflows/check.yml'
+      - 'vpngate.py'
+      - 'requirements.txt'
+      - 'public/**'
 
 permissions:
   contents: read
@@ -16,6 +25,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,60 +45,60 @@ jobs:
           CHECK_CONCURRENCY: "32"
           CHECK_TIMEOUT: "90"
 
-      - name: Ensure GitHub Pages is enabled for the repo default branch
+      - name: Ensure GitHub Pages is enabled for the repository default branch
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
         run: |
-          set -e
+          set -euo pipefail
 
-          REPO="$GITHUB_REPOSITORY"
+          REPO="${GITHUB_REPOSITORY}"
 
-          echo "Repository: $REPO"
+          echo "Repository: ${REPO}"
 
-          # 读取实际默认分支，而不是写死 main
           DEFAULT_BRANCH=$(curl -fsSL \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
-            "https://api.github.com/repos/$REPO" \
+            "https://api.github.com/repos/${REPO}" \
             | python -c 'import sys, json; print(json.load(sys.stdin).get("default_branch", "main"))')
 
-          echo "Default branch: $DEFAULT_BRANCH"
+          echo "Detected default branch: ${DEFAULT_BRANCH}"
 
-          # 检查 Pages 是否已经启用
-          CODE=$(curl -sS -o /dev/null -w '%{http_code}' \
+          PAGE_STATUS=$(curl -sS -o /dev/null -w '%{http_code}' \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
-            "https://api.github.com/repos/$REPO/pages")
+            "https://api.github.com/repos/${REPO}/pages" || true)
 
-          echo "Pages API status before: $CODE"
+          echo "Pages API status before: ${PAGE_STATUS}"
 
-          if [ "$CODE" = "404" ]; then
-            echo "Enabling GitHub Pages with GitHub Actions source and /public path..."
+          if [ "${PAGE_STATUS}" = "404" ]; then
+            echo "GitHub Pages is not enabled. Enabling it now..."
             curl -fsSL -X PUT \
               -H "Authorization: Bearer $GITHUB_TOKEN" \
               -H "Content-Type: application/json" \
-              -d "{\"build_type\":\"workflow\",\"source\":{\"branches\":[\"$DEFAULT_BRANCH\"],\"path\":\"/public\"}}" \
-              "https://api.github.com/repos/$REPO/pages"
+              -d "{\"build_type\":\"workflow\",\"source\":{\"branches\":[\"${DEFAULT_BRANCH}\"],\"path\":\"/public\"}}" \
+              "https://api.github.com/repos/${REPO}/pages"
 
-            echo "Waiting for Pages site to be created..."
+            echo "Waiting 10 seconds for Pages creation to complete..."
             sleep 10
           fi
 
       - name: Wait until GitHub Pages API is ready
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
         run: |
-          set -e
+          set -euo pipefail
 
-          REPO="$GITHUB_REPOSITORY"
+          REPO="${GITHUB_REPOSITORY}"
 
           for i in $(seq 1 12); do
             CODE=$(curl -sS -o /dev/null -w '%{http_code}' \
               -H "Authorization: Bearer $GITHUB_TOKEN" \
-              "https://api.github.com/repos/$REPO/pages" || true)
+              "https://api.github.com/repos/${REPO}/pages" || true)
 
-            echo "Pages API status: $CODE"
+            echo "Pages API status: ${CODE}"
 
-            if [ "$CODE" = "200" ]; then
-              echo "GitHub Pages is ready"
+            if [ "${CODE}" = "200" ]; then
+              echo "GitHub Pages API is ready"
               exit 0
             fi
 
